@@ -1,0 +1,96 @@
+---
+title: "Tidyverse Assignment"
+author: "Alain T Kuiete"
+date: "12/5/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How accurated is the FiveThirtyEigth Model on Predicting Soccer Match Scores
+
+### Library
+```{r}
+library(tidyverse)
+```
+
+### Loading the Datasets
+```{r}
+soccer <- read.csv("https://raw.githubusercontent.com/AlainKuiete/DATA607/master/spi_matches.csv")
+```
+
+### Introspecting the dataset
+```{r}
+head(soccer)
+summary(soccer)
+str(soccer)
+```
+
+### Selecting Useful Variables Using Pipe and Predicting Score 
+```{r}
+pred.res <- soccer %>% select(spi1, spi2, score1, score2) %>%                       mutate(sc.p=if_else(spi1>=spi2, 1, 0))
+head(pred.res)
+```
+
+### Actual scores
+```{r}
+act.pred <- pred.res %>% mutate(sc.r=if_else(score1>=score2, 1, 0))%>% select(sc.r, sc.p)
+head(act.pred)
+```
+
+```{r}
+act.pred <- act.pred %>% mutate(diff=if_else(sc.r==sc.p, 1, 0))
+```
+
+
+```{r}
+res <- act.pred %>% group_by(diff)%>% summarise(count=n())
+res
+```
+
+### Accuracy of prediction
+
+```{r}
+pt <- as.numeric(filter(res, count, diff==1)[1,2])
+pf <- as.numeric(filter(res, count, diff==0)[1,2])
+```
+
+```{r}
+pt
+pf
+ac <- pt/(pt+pf) 
+ac
+```
+
+### Overall, FiveThirtyEigth predicted at 60.6% the 2016 Europeean  Leagues of Soccer.
+
+
+
+### Classification of teams by leagues in 2016 World Soccer leagues
+
+```{r}
+s.teams <- select(soccer, league_id, league, team1, team2, score1, score2)
+```
+
+### we can imbricate if else statements
+
+```{r}
+s.teams <- s.teams %>% group_by(league_id, league, team1)%>% mutate(pt1=if_else(score1>score2,3, if_else(score1==score2, 1, 0))) %>% mutate(pt2=if_else(score2>score1,3, if_else(score2==score1, 1, 0)))
+```
+
+### Points gained by each team
+```{r}
+ s.teams <- s.teams %>% summarise_at( c("pt1","pt2"), sum, na.rm = TRUE) %>% mutate(pts = pt1+pt2)
+```
+
+
+### Best teams by leagues in 2016 Wold Soccer leagues
+
+```{r}
+s.teams %>% filter( pts==max(pts))
+```
+
