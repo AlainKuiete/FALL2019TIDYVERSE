@@ -185,7 +185,7 @@ In this assignment, we were able to read the data, clean and transform and visua
 
 ### Add ons
 ```{r}
-ggplot(wine_final, aes(x=points, y=price))+ geom_point()
+ggplot(wine_final, aes(x=points, y=price))+ geom_point(aes(color='province'))
 ```
 
 ### There is an outlier that has an extremrly high price 2000.
@@ -207,9 +207,13 @@ It look like a mistake. The year 2013 fell in variable price.because it is rate 
 
 ```{r}
 wine_final$price[wine_final$price==2013] <- med.price
+wine_final$price <- as.numeric(wine_final$price)
 ```
 
 
 ```{r}
-filter(wine_final, price>2000)
+ggplot(wine_final, aes(x=points, y=price, color='province'))+ geom_point()
 ```
+
+
+### The outlier point has been changed giving more realistic data. We used median instead of mean become the number 2013 will still be part of the mean but not the median.
